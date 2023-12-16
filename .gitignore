@@ -19,3 +19,13 @@
 
 # Go workspace file
 go.work
+
+# unrelated files
+*.xml
+*.iml
+
+# IDE files
+.idea/
+
+# Config file for database
+config.yaml

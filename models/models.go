@@ -1,34 +1,38 @@
 package models
 
-type MensaData struct {
-	City         string
-	LocationType string
-	Day          string
-	Open         bool
-	Meals        []Meal
+type Price struct {
+	Value    int    `json:"value"`
+	Currency string `json:"currency"`
+}
+
+type Canteen struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	City string `json:"city"`
 }
 
 type Meal struct {
-	Name         string
-	Price        string
-	Vegan        bool
-	Vegetarian   bool
-	Chicken      bool
-	Fish         bool
-	Pig          bool
-	Cow          bool
-	SH_Plate     bool
-	PriceByGroup PriceByGroup
-	Allergens    []Allergen
+	Price           string           `json:"price"`
+	Name            string           `json:"name"`
+	Vegetarian      bool             `json:"vegetarian"`
+	Vegan           bool             `json:"vegan"`
+	Canteen         Canteen          `json:"canteen"`
+	Allergens       []Allergen       `json:"allergens"`
+	FoodPreferences []FoodPreference `json:"foodPreferences"`
+	Additives       []Additive       `json:"additives"`
 }
 
 type Allergen struct {
-	Code string
-	Name string
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
-type PriceByGroup struct {
-	Students  string
-	Employees string
-	Guests    string
+type FoodPreference struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type Additive struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }

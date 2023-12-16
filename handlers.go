@@ -1,22 +1,16 @@
 package main
 
 import (
-	"GOpenMensa/models"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
-func handleMeals(router *gin.Engine) {
+func GetMealsHandler(router *gin.Engine, app *App) {
 	router.GET("/meals", func(c *gin.Context) {
-		day := c.Query("day")
-		city := c.Query("city")
-		locationType := c.Query("locationType")
-		mensaData := models.MensaData{
-			City:         city,
-			LocationType: locationType,
-			Day:          day,
-		}
-		selectMensa(c, mensaData, day)
+		canteen, _ := strconv.Atoi(c.Query("canteen"))
+		url := selectMensa(canteen)
+		ParsePage(c, url, app)
 	})
 }
 

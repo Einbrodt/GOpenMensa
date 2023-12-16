@@ -2,29 +2,48 @@ package main
 
 import (
 	"GOpenMensa/models"
+	"database/sql"
 	"github.com/gocolly/colly"
+	"log"
 	"strings"
 )
 
-func getMealInformation(e *colly.HTMLElement) []models.Meal {
+func GetMealInformation(e *colly.HTMLElement, canteen models.Canteen) []models.Meal {
 	meals := make([]models.Meal, 0, len(".mensa_menu_detail"))
 	var meal models.Meal
 	e.ForEach(".mensa_menu_detail", func(i int, element *colly.HTMLElement) {
 		meal = models.Meal{
-			Name:         extractMealName(element),
-			Price:        element.ChildText(".menu_preis"),
-			Vegan:        dataArtenContains(element, "ve"),
-			Vegetarian:   dataArtenContains(element, "vg"),
-			Chicken:      dataArtenContains(element, "G"),
-			Fish:         dataArtenContains(element, "AGF"),
-			Pig:          dataArtenContains(element, "AGS"),
-			SH_Plate:     dataArtenContains(element, "SHT"),
-			Allergens:    getAllergens(element),
-			PriceByGroup: getPriceByGroup(element),
+			Name:       extractMealName(element),
+			Price:      element.ChildText(".menu_preis"),
+			Vegan:      dataArtenContains(element, "ve"),
+			Vegetarian: dataArtenContains(element, "vg"),
+			Allergens:  getAllergens(element),
+			Canteen:    canteen,
 		}
 		meals = append(meals, meal)
 	})
 	return meals
+}
+
+func getCanteenInfo(canteenID int, db *sql.DB) models.Canteen {
+	query := "SELECT * FROM canteens WHERE id=$1"
+	rows, err := db.Query(query, canteenID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var canteen models.Canteen
+
+	if rows.Next() {
+		err = rows.Scan(&canteen.ID, &canteen.Name, &canteen.City)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		log.Fatal("No rows returned")
+	}
+
+	return canteen
 }
 
 func getAllergenInfo(allergenCodes string) []models.Allergen {
@@ -41,7 +60,6 @@ func getAllergenInfo(allergenCodes string) []models.Allergen {
 		}
 
 		allergen := models.Allergen{
-			Code: code,
 			Name: name,
 		}
 
@@ -55,6 +73,7 @@ func getAllergens(e *colly.HTMLElement) []models.Allergen {
 	return getAllergenInfo(allergenCodes)
 }
 
+/*
 func getPriceByGroup(e *colly.HTMLElement) models.PriceByGroup {
 	priceList := e.ChildText(".menu_preis")
 	prices := strings.Split(priceList, "/")
@@ -67,3 +86,4 @@ func getPriceByGroup(e *colly.HTMLElement) models.PriceByGroup {
 
 	return priceByGroup
 }
+*/

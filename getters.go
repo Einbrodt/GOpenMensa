@@ -3,12 +3,13 @@ package main
 import (
 	"GOpenMensa/models"
 	"database/sql"
+	"fmt"
 	"github.com/gocolly/colly"
 	"log"
 	"strings"
 )
 
-func GetMealInformation(e *colly.HTMLElement, canteen models.Canteen) []models.Meal {
+func parseMealInformation(e *colly.HTMLElement, canteen models.Canteen) []models.Meal {
 	meals := make([]models.Meal, 0, len(".mensa_menu_detail"))
 	var meal models.Meal
 	e.ForEach(".mensa_menu_detail", func(i int, element *colly.HTMLElement) {
@@ -17,7 +18,6 @@ func GetMealInformation(e *colly.HTMLElement, canteen models.Canteen) []models.M
 			Price:      element.ChildText(".menu_preis"),
 			Vegan:      dataArtenContains(element, "ve"),
 			Vegetarian: dataArtenContains(element, "vg"),
-			Allergens:  getAllergens(element),
 			Canteen:    canteen,
 		}
 		meals = append(meals, meal)
@@ -68,9 +68,21 @@ func getAllergenInfo(allergenCodes string) []models.Allergen {
 	return allergens
 }
 
-func getAllergens(e *colly.HTMLElement) []models.Allergen {
-	allergenCodes := e.ChildText(".menu_name.mensa_zusatz")
-	return getAllergenInfo(allergenCodes)
+func parseAllergens(e *colly.HTMLElement) []models.Allergen {
+	allergens := make([]models.Allergen, 0)
+	var allergen models.Allergen
+	e.ForEach(".filterbutton.span", func(i int, element *colly.HTMLElement) {
+		fmt.Println(element.ChildText(".abk"))
+		allergen = models.Allergen{
+			Abbreviation: element.ChildText(".abk"),
+			Name:         element.ChildText("not(.abk)"),
+		}
+		allergens = append(allergens, allergen)
+	})
+	return allergens
+
+	//allergenCodes := e.ChildText(".menu_name.mensa_zusatz")
+	//return getAllergenInfo(allergenCodes)
 }
 
 /*

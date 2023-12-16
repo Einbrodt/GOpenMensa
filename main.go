@@ -40,11 +40,14 @@ func ParsePage(c *gin.Context, url string, app *App) {
 		fmt.Println(r.StatusCode)
 	})
 
+	col.OnHTML(".mbf_content", func(e *colly.HTMLElement) {
+		allergens := parseAllergens(e)
+		fmt.Println(allergens)
+	})
 	canteenID, _ := strconv.Atoi(c.Query("canteen"))
 	col.OnHTML(selectDay(time.Now().Weekday().String()), func(e *colly.HTMLElement) {
-		fmt.Println("Meals:")
 		canteen := getCanteenInfo(canteenID, app.DB)
-		meals := GetMealInformation(e, canteen)
+		meals := parseMealInformation(e, canteen)
 		c.JSON(200, gin.H{"meals": meals})
 	})
 

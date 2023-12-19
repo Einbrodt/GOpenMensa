@@ -1,21 +1,27 @@
 package models
 
-type Price struct {
-	Value    int    `json:"value"`
-	Currency string `json:"currency"`
+import "time"
+
+type Prices struct {
+	Currency      string    `json:"currency"`
+	StudentPrice  float64   `json:"studentPrice"`
+	LecturerPrice float64   `json:"lecturerPrice"`
+	GuestPrice    float64   `json:"guestPrice"`
+	LastUpdate    time.Time `json:"lastUpdate"`
 }
 
 type Canteen struct {
-	ID   string `json:"id"`
+	ID   int    `json:"id"`
 	Name string `json:"name"`
 	City string `json:"city"`
 }
 
 type Meal struct {
-	Price           string           `json:"price"`
+	ID              int              `json:"id"`
 	Name            string           `json:"name"`
 	Vegetarian      bool             `json:"vegetarian"`
 	Vegan           bool             `json:"vegan"`
+	LastUpdate      time.Time        `json:"lastUpdate"`
 	Canteen         Canteen          `json:"canteen"`
 	Allergens       []Allergen       `json:"allergens"`
 	FoodPreferences []FoodPreference `json:"foodPreferences"`

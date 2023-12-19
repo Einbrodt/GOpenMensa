@@ -1,6 +1,7 @@
 package main
 
 import (
+	"GOpenMensa/models"
 	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -8,13 +9,14 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
 	"log"
-	"strconv"
 	"time"
 )
 
 type App struct {
 	DB *sql.DB
 }
+
+var allergens []models.Allergen
 
 func main() {
 	loadConfig()
@@ -39,15 +41,16 @@ func ParsePage(c *gin.Context, url string, app *App) {
 	col.OnResponse(func(r *colly.Response) {
 		fmt.Println(r.StatusCode)
 	})
-
+	foundFirstMBFContent := false
 	col.OnHTML(".mbf_content", func(e *colly.HTMLElement) {
-		allergens := parseAllergens(e)
-		fmt.Println(allergens)
+		if foundFirstMBFContent {
+			return
+		}
+		allergens = parseAllergens(e)
+		foundFirstMBFContent = true
 	})
-	canteenID, _ := strconv.Atoi(c.Query("canteen"))
 	col.OnHTML(selectDay(time.Now().Weekday().String()), func(e *colly.HTMLElement) {
-		canteen := getCanteenInfo(canteenID, app.DB)
-		meals := parseMealInformation(e, canteen)
+		meals := parseMealInformation(e)
 		c.JSON(200, gin.H{"meals": meals})
 	})
 
@@ -57,6 +60,16 @@ func ParsePage(c *gin.Context, url string, app *App) {
 		c.JSON(500, gin.H{"error": "Error visiting URL"})
 		return
 	}
+	insertIntoDatabase(app)
+}
+
+func insertIntoDatabase(app *App) {
+	db := app.DB
+	err := insertAllergensIntoDB(allergens, db)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
 
 /*
